@@ -19,7 +19,7 @@
       <h2>
 <a id="goal-of-this-post" class="anchor" href="#goal-of-this-post" aria-hidden="true"><span class="octicon octicon-link"></span></a>Goal of this post</h2>
 
-<p>The goal of this post is to be able to call any javascript function in a lazy fashion. 
+<p>The goal of this post is to be able to call any javascript function partially. 
 For example, it would mean that if we had a function like:</p>
 
 <div class="highlight highlight-javascript"><pre><span class="pl-k">function</span> <span class="pl-en">add</span> (<span class="pl-smi">x</span>, <span class="pl-smi">y</span>, <span class="pl-smi">z</span>) {
@@ -51,7 +51,7 @@ For example, it would mean that if we had a function like:</p>
      };
 }</pre></div>
 
-<p>This is a interesting function and a good attempt at making functions lazy in javascript. The basic idea of this function is that it takes the original arguments and returns a function that waits for the remaining arguments. You can use it this way:</p>
+<p>This is a interesting function and a good attempt at making functions partially in javascript. The basic idea of this function is that it takes the original arguments and returns a function that waits for the remaining arguments. You can use it this way:</p>
 
 <div class="highlight highlight-javascript"><pre><span class="pl-k">var</span> addSecondHalf <span class="pl-k">=</span> schonfinkelize(add, <span class="pl-c1">1</span>); <span class="pl-c">// yields a function</span>
 addSecondHalf(<span class="pl-c1">2</span>, <span class="pl-c1">3</span>); <span class="pl-c">// yields 6 </span></pre></div>
@@ -136,7 +136,7 @@ It gets interesting when we look at the recursive call. The return statement is 
 <h3>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h3>
 
-<p>So now, how do I make my functions lazy?
+<p>So now, how can I make it so all my functions can be partially applied?
 You can simply call .partialApply() on any function declaration you make. It looks like this.</p>
 
 <div class="highlight highlight-javascript"><pre><span class="pl-k">var</span> <span class="pl-en">add</span> <span class="pl-k">=</span> <span class="pl-k">function</span>(<span class="pl-smi">x</span>, <span class="pl-smi">y</span>, <span class="pl-smi">z</span>) {
@@ -146,7 +146,7 @@ You can simply call .partialApply() on any function declaration you make. It loo
 <span class="pl-k">var</span> b <span class="pl-k">=</span> <span class="pl-c1">add</span>(<span class="pl-c1">1</span>)(<span class="pl-c1">2</span>)(<span class="pl-c1">3</span>); <span class="pl-c">// yields 6</span>
 <span class="pl-k">var</span> c <span class="pl-k">=</span> <span class="pl-c1">add</span>(<span class="pl-c1">1</span>)(<span class="pl-c1">2</span>, <span class="pl-c1">3</span>); <span class="pl-c">// yields 6</span></pre></div>
 
-<p>So this is how you transform any function into a lazy one! </p>
+<p>So this is how you curry your functions in JavaScript! </p>
 
 <h3>
 <a id="thank-you-for-reading" class="anchor" href="#thank-you-for-reading" aria-hidden="true"><span class="octicon octicon-link"></span></a>Thank you for reading.</h3>
