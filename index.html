@@ -51,7 +51,7 @@ For example, it would mean that if we had a function like:</p>
      };
 }</pre></div>
 
-<p>This is a interesting function and a good attempt at making functions lazy in javascript. The basic idea of this function is that it takes the arguments you give it at first and returns a function that waits for all the other arguments. You can use it this way:</p>
+<p>This is a interesting function and a good attempt at making functions lazy in javascript. The basic idea of this function is that it takes the original arguments and returns a function that waits for the remaining arguments. You can use it this way:</p>
 
 <div class="highlight highlight-javascript"><pre><span class="pl-k">var</span> addSecondHalf <span class="pl-k">=</span> schonfinkelize(add, <span class="pl-c1">1</span>); <span class="pl-c">// yields a function</span>
 addSecondHalf(<span class="pl-c1">2</span>, <span class="pl-c1">3</span>); <span class="pl-c">// yields 6 </span></pre></div>
@@ -67,7 +67,7 @@ addSecondHalf(<span class="pl-c1">2</span>, <span class="pl-c1">3</span>); <span
 <h2>
 <a id="the-path-to-the-solution" class="anchor" href="#the-path-to-the-solution" aria-hidden="true"><span class="octicon octicon-link"></span></a>The path to the solution</h2>
 
-<p>The first thing we need to think about is how do we know if we have enough arguments to call the function? It turns out javascript has this built-in. Every function in javascript have the attribute length, which returns the number of arguments a function is expecting. So in our case:</p>
+<p>The first thing we need to think about is how do we know if we have enough arguments to call the function? It turns out javascript has this built-in. Every function in javascript has the attribute length, which returns the number of arguments a function is expecting. So in our case:</p>
 
 <div class="highlight highlight-javascript"><pre>add.<span class="pl-c1">length</span>  <span class="pl-c">// yields 3</span></pre></div>
 
