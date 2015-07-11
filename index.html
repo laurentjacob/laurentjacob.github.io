@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Function.prototype.partialApply by laurentjacob</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Function.prototype.partialApply</h1>
+      <h2 class="project-tagline">Being able to partially apply any function in javascript.</h2>
+    </section>
+
+    <section class="main-content">
+      <h2>
+<a id="goal-of-this-post" class="anchor" href="#goal-of-this-post" aria-hidden="true"><span class="octicon octicon-link"></span></a>Goal of this post</h2>
+
+<p>The goal of this post is to be able to call any javascript function in a lazy fashion. 
+For example, it would mean that if we had a function like:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-k">function</span> <span class="pl-en">add</span> (<span class="pl-smi">x</span>, <span class="pl-smi">y</span>, <span class="pl-smi">z</span>) {
+  <span class="pl-k">return</span> x <span class="pl-k">+</span> y <span class="pl-k">+</span> z;
+}</pre></div>
+
+<p>We would like to be able to do the following:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-k">var</span> partialAdd <span class="pl-k">=</span> <span class="pl-c1">add</span>(<span class="pl-c1">1</span>); <span class="pl-c">// yields a function that needs 2 more arguments</span>
+<span class="pl-k">var</span> result <span class="pl-k">=</span> partialAdd(<span class="pl-c1">2</span>, <span class="pl-c1">3</span>);  <span class="pl-c">// yields 6</span></pre></div>
+
+<p>It means that we can call the function lazily however we want:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-c1">add</span>(<span class="pl-c1">1</span>, <span class="pl-c1">2</span>, <span class="pl-c1">3</span>); <span class="pl-c">// yields 6</span>
+<span class="pl-c1">add</span>(<span class="pl-c1">1</span>)(<span class="pl-c1">2</span>)(<span class="pl-c1">3</span>); <span class="pl-c">// yields 6</span></pre></div>
+
+<h2>
+<a id="starting-point" class="anchor" href="#starting-point" aria-hidden="true"><span class="octicon octicon-link"></span></a>Starting point</h2>
+
+<p>We will start by looking at a function found online <a href="http://www.drdobbs.com/open-source/currying-and-partial-functions-in-javasc/231001821?pgno=2">here</a>. </p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-k">function</span> <span class="pl-en">schonfinkelize</span>(<span class="pl-smi">fn</span>) {
+     <span class="pl-k">var</span> slice <span class="pl-k">=</span> <span class="pl-c1">Array</span>.<span class="pl-c1">prototype</span>.slice,
+        stored_args <span class="pl-k">=</span> slice.<span class="pl-c1">call</span>(arguments, <span class="pl-c1">1</span>);
+     <span class="pl-k">return</span> <span class="pl-k">function</span> () {
+        <span class="pl-k">var</span> new_args <span class="pl-k">=</span> slice.<span class="pl-c1">call</span>(arguments),
+              args <span class="pl-k">=</span> stored_args.<span class="pl-c1">concat</span>(new_args);
+        <span class="pl-k">return</span> fn.<span class="pl-c1">apply</span>(<span class="pl-c1">null</span>, args);
+     };
+}</pre></div>
+
+<p>This is a interesting function and a good attempt at making functions lazy in javascript. The basic idea of this function is that it takes the arguments you give it at first and returns a function that waits for all the other arguments. You can use it this way:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-k">var</span> addSecondHalf <span class="pl-k">=</span> schonfinkelize(add, <span class="pl-c1">1</span>); <span class="pl-c">// yields a function</span>
+addSecondHalf(<span class="pl-c1">2</span>, <span class="pl-c1">3</span>); <span class="pl-c">// yields 6 </span></pre></div>
+
+<p>The issue with this function is that we can't do something like:</p>
+
+<div class="highlight highlight-javascript"><pre>schonfinkelize(add, <span class="pl-c1">1</span>)(<span class="pl-c1">2</span>)(<span class="pl-c1">3</span>); <span class="pl-c">// Doesn't work</span></pre></div>
+
+<p>The reason it doesn't work is because schonfinkelize is not called recursively by looking if we have enough arguments to call the function. In order to make it work, we would have to do something like the following:</p>
+
+<div class="highlight highlight-javascript"><pre>schonfinkelize(schonfinkelize(add, <span class="pl-c1">1</span>)(<span class="pl-c1">2</span>))(<span class="pl-c1">3</span>);  <span class="pl-c">// yields 6</span></pre></div>
+
+<h2>
+<a id="the-path-to-the-solution" class="anchor" href="#the-path-to-the-solution" aria-hidden="true"><span class="octicon octicon-link"></span></a>The path to the solution</h2>
+
+<p>The first thing we need to think about is how do we know if we have enough arguments to call the function? It turns out javascript has this built-in. Every function in javascript have the attribute length, which returns the number of arguments a function is expecting. So in our case:</p>
+
+<div class="highlight highlight-javascript"><pre>add.<span class="pl-c1">length</span>  <span class="pl-c">// yields 3</span></pre></div>
+
+<p>With this information, we know that the base case of our recursive call will be called if we have enough arguments to call the function. With this in mind, let's look at a first solution.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-k">function</span> <span class="pl-en">partialApply</span>(<span class="pl-smi">fn</span>) {
+    <span class="pl-k">var</span> slice <span class="pl-k">=</span> <span class="pl-c1">Array</span>.<span class="pl-c1">prototype</span>.slice;
+    <span class="pl-k">var</span> curr_args <span class="pl-k">=</span> slice.<span class="pl-c1">call</span>(arguments, <span class="pl-c1">1</span>);
+    <span class="pl-k">if</span>(fn.<span class="pl-c1">length</span> <span class="pl-k">&gt;</span> curr_args.<span class="pl-c1">length</span>) {
+        <span class="pl-k">return</span> <span class="pl-k">function</span>() {
+            <span class="pl-k">var</span> new_args <span class="pl-k">=</span> slice.<span class="pl-c1">call</span>(arguments);
+            <span class="pl-k">var</span> args <span class="pl-k">=</span> curr_args.<span class="pl-c1">concat</span>(new_args);
+            <span class="pl-k">return</span> partialApply.<span class="pl-c1">apply</span>(<span class="pl-c1">null</span>, [fn].<span class="pl-c1">concat</span>(args));
+        }
+    }
+    <span class="pl-k">else</span> {
+        <span class="pl-k">return</span> fn.<span class="pl-c1">apply</span>(<span class="pl-c1">null</span>, curr_args);
+    }
+}</pre></div>
+
+<p>So what does this function do exactly? We recursively call partialApply as long as we don't have enough arguments and the base case is called and we have enough or them. This function allows us to do something like:</p>
+
+<div class="highlight highlight-javascript"><pre>partialApply(add, <span class="pl-c1">1</span>)(<span class="pl-c1">1</span>)(<span class="pl-c1">2</span>); <span class="pl-c">// yields 4</span>
+partialApply(add)(<span class="pl-c1">1</span>)(<span class="pl-c1">1</span>)(<span class="pl-c1">2</span>); <span class="pl-c">// yields 4</span>
+partialApply(add)(<span class="pl-c1">1</span>, <span class="pl-c1">1</span>)(<span class="pl-c1">2</span>); <span class="pl-c">// yields 4</span>
+partialApply(add, <span class="pl-c1">1</span>, <span class="pl-c1">1</span>, <span class="pl-c1">2</span>); <span class="pl-c">// yields 4</span></pre></div>
+
+<h2>
+<a id="using-the-function-prototype" class="anchor" href="#using-the-function-prototype" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using the function prototype</h2>
+
+<p>This is great, but it feels awkward to have to pass the function as a parameter, wouldn't it be nice if we could do:</p>
+
+<div class="highlight highlight-javascript"><pre>add.partialApply(<span class="pl-c1">1</span>)(<span class="pl-c1">1</span>)(<span class="pl-c1">2</span>); <span class="pl-c">// yields 4</span>
+add.partialApply(<span class="pl-c1">1</span>, <span class="pl-c1">1</span>)(<span class="pl-c1">2</span>); <span class="pl-c">// yields 4</span>
+add.partialApply(<span class="pl-c1">1</span>, <span class="pl-c1">1</span>, <span class="pl-c1">2</span>); <span class="pl-c">// yields 4</span></pre></div>
+
+<p>The solution is very similar to the above but it will be bound to the function prototype:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-c1">Function</span>.<span class="pl-c1">prototype</span>.<span class="pl-en">partialApply</span> <span class="pl-k">=</span> <span class="pl-k">function</span>() {
+    <span class="pl-k">var</span> fn <span class="pl-k">=</span> <span class="pl-v">this</span>;
+    <span class="pl-k">var</span> slice <span class="pl-k">=</span> <span class="pl-c1">Array</span>.<span class="pl-c1">prototype</span>.slice;
+    <span class="pl-k">var</span> curr_args <span class="pl-k">=</span> slice.<span class="pl-c1">call</span>(arguments);
+    <span class="pl-k">if</span>(fn.<span class="pl-c1">length</span> <span class="pl-k">&gt;</span> curr_args.<span class="pl-c1">length</span>) {
+        <span class="pl-k">return</span> <span class="pl-k">function</span> () {
+            <span class="pl-k">var</span> new_args <span class="pl-k">=</span> slice.<span class="pl-c1">call</span>(arguments);
+            <span class="pl-k">var</span> args <span class="pl-k">=</span> curr_args.<span class="pl-c1">concat</span>(new_args);
+            <span class="pl-k">return</span> fn.partialApply.<span class="pl-c1">apply</span>(fn, args); 
+        }
+    }
+    <span class="pl-k">else</span> {
+        <span class="pl-k">return</span> fn.<span class="pl-c1">apply</span>(<span class="pl-c1">null</span>, curr_args);
+    }
+};</pre></div>
+
+<p>In this function, we utlize the fact the javascript functions are first-class objects. In effect, any function is an instance of the Function prototype and therefore will have access to our function partialApply. The "this" keyword in javascript refers to the instance calling that function. The base case remains unchanged. 
+It gets interesting when we look at the recursive call. The return statement is the following:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-k">return</span> fn.partialApply.<span class="pl-c1">apply</span>(fn, args);</pre></div>
+
+<p>We can't simply call partialApply, we need to apply it because we only have access to the arguments in the form of an array. The other interesting part of this line is that we have to pass in fn as the first argument, since it defined what "this" will be in the function call. If we simply did: </p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-k">return</span> fn.partialApply.<span class="pl-c1">apply</span>(<span class="pl-c1">null</span>, args);</pre></div>
+
+<p>It would yield the error ("Cannot read property 'apply' of undefined"), since we would not bind this to the right function in the recursive call.</p>
+
+<h3>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h3>
+
+<p>So now, how do I make my functions lazy?
+You can simply call .partialApply() on any function declaration you make. It looks like this.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="pl-k">var</span> <span class="pl-en">add</span> <span class="pl-k">=</span> <span class="pl-k">function</span>(<span class="pl-smi">x</span>, <span class="pl-smi">y</span>, <span class="pl-smi">z</span>) {
+    <span class="pl-k">return</span> x <span class="pl-k">+</span> y <span class="pl-k">+</span> z;
+}.partialApply();
+<span class="pl-k">var</span> a <span class="pl-k">=</span> <span class="pl-c1">add</span>(<span class="pl-c1">1</span>, <span class="pl-c1">2</span>, <span class="pl-c1">3</span>); <span class="pl-c">// yields 6</span>
+<span class="pl-k">var</span> b <span class="pl-k">=</span> <span class="pl-c1">add</span>(<span class="pl-c1">1</span>)(<span class="pl-c1">2</span>)(<span class="pl-c1">3</span>); <span class="pl-c">// yields 6</span>
+<span class="pl-k">var</span> c <span class="pl-k">=</span> <span class="pl-c1">add</span>(<span class="pl-c1">1</span>)(<span class="pl-c1">2</span>, <span class="pl-c1">3</span>); <span class="pl-c">// yields 6</span></pre></div>
+
+<p>So this is how you transform any function into a lazy one! </p>
+
+<h3>
+<a id="thank-you-for-reading" class="anchor" href="#thank-you-for-reading" aria-hidden="true"><span class="octicon octicon-link"></span></a>Thank you for reading.</h3>
+
+      <footer class="site-footer">
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
