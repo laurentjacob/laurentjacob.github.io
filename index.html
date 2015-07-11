@@ -127,7 +127,7 @@ It gets interesting when we look at the recursive call. The return statement is 
 
 <div class="highlight highlight-javascript"><pre><span class="pl-k">return</span> fn.partialApply.<span class="pl-c1">apply</span>(fn, args);</pre></div>
 
-<p>We can't simply call partialApply, we need to apply it because we only have access to the arguments in the form of an array. The other interesting part of this line is that we have to pass in fn as the first argument, since it defined what "this" will be in the function call. If we simply did: </p>
+<p>We can't simply call partialApply, we need to apply it because we only have access to the arguments in the form of an array. The other interesting part of this line is that we have to pass in fn as the first argument, since it defines what "this" will be in the function call. If we simply did: </p>
 
 <div class="highlight highlight-javascript"><pre><span class="pl-k">return</span> fn.partialApply.<span class="pl-c1">apply</span>(<span class="pl-c1">null</span>, args);</pre></div>
 
