@@ -122,7 +122,7 @@ add.partialApply(<span class="pl-c1">1</span>, <span class="pl-c1">1</span>, <sp
     }
 };</pre></div>
 
-<p>In this function, we utlize the fact the javascript functions are first-class objects. In effect, any function is an instance of the Function prototype and therefore will have access to our function partialApply. The "this" keyword in javascript refers to the instance calling that function. The base case remains unchanged. 
+<p>In this function, we utilize the fact the javascript functions are first-class objects. In effect, any function is an instance of the Function prototype and therefore will have access to our function partialApply. The "this" keyword in javascript refers to the instance calling that function. The base case remains unchanged. 
 It gets interesting when we look at the recursive call. The return statement is the following:</p>
 
 <div class="highlight highlight-javascript"><pre><span class="pl-k">return</span> fn.partialApply.<span class="pl-c1">apply</span>(fn, args);</pre></div>
