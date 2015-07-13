@@ -31,7 +31,7 @@ For example, it would mean that if we had a function like:</p>
 <div class="highlight highlight-javascript"><pre><span class="pl-k">var</span> partialAdd <span class="pl-k">=</span> <span class="pl-c1">add</span>(<span class="pl-c1">1</span>); <span class="pl-c">// yields a function that needs 2 more arguments</span>
 <span class="pl-k">var</span> result <span class="pl-k">=</span> partialAdd(<span class="pl-c1">2</span>, <span class="pl-c1">3</span>);  <span class="pl-c">// yields 6</span></pre></div>
 
-<p>It means that we can call the function lazily however we want:</p>
+<p>It means that we can call the function however we want (fully or partially):</p>
 
 <div class="highlight highlight-javascript"><pre><span class="pl-c1">add</span>(<span class="pl-c1">1</span>, <span class="pl-c1">2</span>, <span class="pl-c1">3</span>); <span class="pl-c">// yields 6</span>
 <span class="pl-c1">add</span>(<span class="pl-c1">1</span>)(<span class="pl-c1">2</span>)(<span class="pl-c1">3</span>); <span class="pl-c">// yields 6</span></pre></div>
